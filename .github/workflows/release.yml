@@ -1,0 +1,107 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.changeset/**']
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+
+      - name: Create Release PR or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: bun run ci:version
+          publish: bun run ci:release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload binaries to GitHub Release
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          VERSION=$(bun -e "console.log(require('./package.json').version)")
+          tar -czf better-pm-darwin-arm64.tar.gz -C dist better-pm-darwin-arm64
+          tar -czf better-pm-darwin-x64.tar.gz -C dist better-pm-darwin-x64
+          tar -czf better-pm-linux-x64.tar.gz -C dist better-pm-linux-x64
+          tar -czf better-pm-linux-arm64.tar.gz -C dist better-pm-linux-arm64
+          gh release create "better-pm@${VERSION}" --title "better-pm@${VERSION}" --notes "" 2>/dev/null || true
+          gh release upload "better-pm@${VERSION}" \
+            better-pm-darwin-arm64.tar.gz \
+            better-pm-darwin-x64.tar.gz \
+            better-pm-linux-x64.tar.gz \
+            better-pm-linux-arm64.tar.gz
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Homebrew formula
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          VERSION=$(bun -e "console.log(require('./package.json').version)")
+          SHA_DARWIN_ARM64=$(shasum -a 256 better-pm-darwin-arm64.tar.gz | cut -d ' ' -f 1)
+          SHA_DARWIN_X64=$(shasum -a 256 better-pm-darwin-x64.tar.gz | cut -d ' ' -f 1)
+          SHA_LINUX_X64=$(shasum -a 256 better-pm-linux-x64.tar.gz | cut -d ' ' -f 1)
+          SHA_LINUX_ARM64=$(shasum -a 256 better-pm-linux-arm64.tar.gz | cut -d ' ' -f 1)
+
+          git clone https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/fdarian/homebrew-tap.git /tmp/tap
+          cd /tmp/tap
+
+          cat > Formula/better-pm.rb <<RUBY
+          class BetterPm < Formula
+            desc "CLI for package manager operations in monorepos"
+            homepage "https://github.com/fdarian/better-pm"
+            version "${VERSION}"
+            license "MIT"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/fdarian/better-pm/releases/download/better-pm%40${VERSION}/better-pm-darwin-arm64.tar.gz"
+                sha256 "${SHA_DARWIN_ARM64}"
+              end
+              on_intel do
+                url "https://github.com/fdarian/better-pm/releases/download/better-pm%40${VERSION}/better-pm-darwin-x64.tar.gz"
+                sha256 "${SHA_DARWIN_X64}"
+              end
+            end
+
+            on_linux do
+              on_arm do
+                url "https://github.com/fdarian/better-pm/releases/download/better-pm%40${VERSION}/better-pm-linux-arm64.tar.gz"
+                sha256 "${SHA_LINUX_ARM64}"
+              end
+              on_intel do
+                url "https://github.com/fdarian/better-pm/releases/download/better-pm%40${VERSION}/better-pm-linux-x64.tar.gz"
+                sha256 "${SHA_LINUX_X64}"
+              end
+            end
+
+            def install
+              bin.install Dir["*"].first => "pm"
+            end
+
+            test do
+              system "#{bin}/pm", "--help"
+            end
+          end
+          RUBY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/better-pm.rb
+          git commit -m "better-pm ${VERSION}"
+          git push
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}

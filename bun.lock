@@ -15,6 +15,12 @@
         "effect": "^3.19.15",
         "typescript": "latest",
       },
+      "optionalDependencies": {
+        "better-pm-darwin-arm64": "0.0.0",
+        "better-pm-darwin-x64": "0.0.0",
+        "better-pm-linux-arm64": "0.0.0",
+        "better-pm-linux-x64": "0.0.0",
+      },
     },
   },
   "packages": {

@@ -18,6 +18,10 @@ Standalone CLI for package manager operations in monorepos.
   - `--filter <name>` / `-F <name>` — target specific workspace packages (repeatable)
   - `--sure` — confirm full monorepo install from root
 
+## Deployment
+
+See `docs/deployment.md` for the full release pipeline.
+
 ## Development
 
 ```sh
