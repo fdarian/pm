@@ -1,0 +1,26 @@
+# pm
+
+Standalone CLI for package manager operations in monorepos.
+
+## Structure
+
+- `entries/cli.ts` — Effect CLI bootstrap
+- `src/commands/install.ts` — Core install logic with monorepo-root safety
+- `src/project/find-upward.ts` — Upward file traversal utility
+- `src/lib/errors.ts` — Tagged errors
+
+## Commands
+
+- `pm i` — Install with monorepo awareness
+  - From package dir: auto-filters to current package
+  - From monorepo root: warns and lists packages, requires `--sure` or `-F <name>`
+  - `--filter <name>` / `-F <name>` — target specific workspace packages (repeatable)
+  - `--sure` — confirm full monorepo install from root
+
+## Development
+
+```sh
+bun install
+bun run check:tsc
+bun entries/cli.ts i
+```
