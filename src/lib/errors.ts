@@ -1,11 +1,14 @@
-import { Data } from 'effect'
+import { Data } from 'effect';
 
 export class NoPackageManagerDetectedError extends Data.TaggedError(
-	'NoPackageManagerDetectedError'
+	'NoPackageManagerDetectedError',
 )<{
-	message: string
+	message: string;
 }> {
 	constructor() {
-		super({ message: 'No lock file found. Could not detect package manager (pnpm or bun).' })
+		super({
+			message:
+				'No lock file found. Could not detect package manager (pnpm or bun).',
+		});
 	}
 }
