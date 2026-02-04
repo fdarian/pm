@@ -6,6 +6,7 @@ Standalone CLI for package manager operations in monorepos.
 
 - `entries/cli.ts` — Effect CLI bootstrap
 - `src/commands/install.ts` — Core install logic with monorepo-root safety
+- `src/pm/` — Package manager abstraction (Context.Tag service, pnpm/bun implementations, detection)
 - `src/project/find-upward.ts` — Upward file traversal utility
 - `src/lib/errors.ts` — Tagged errors
 
