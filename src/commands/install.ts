@@ -1,11 +1,13 @@
 import * as cli from '@effect/cli';
-import { FileSystem, Path, Command as ShellCommand } from '@effect/platform';
+import { FileSystem, Path } from '@effect/platform';
 import { Console, Effect, Schema } from 'effect';
 import { detectPackageManager } from '#src/pm/detect.ts';
 import { PackageManagerService } from '#src/pm/package-manager-service.ts';
 import { findUpward } from '#src/project/find-upward.ts';
+import { runShellCommand } from '#src/commands/run-shell-command.ts';
 
 type MonorepoContext =
+
 	| {
 			type: 'root';
 			lockDir: string;
@@ -71,19 +73,6 @@ const detectContext = Effect.gen(function* () {
 		hasWorkspaces,
 	} as MonorepoContext;
 });
-
-const runShellCommand = (cmd: ShellCommand.Command) =>
-	Effect.scoped(
-		Effect.gen(function* () {
-			const process = yield* cmd.pipe(
-				ShellCommand.stdin('inherit'),
-				ShellCommand.stdout('inherit'),
-				ShellCommand.stderr('inherit'),
-				ShellCommand.start,
-			);
-			return yield* process.exitCode;
-		}),
-	);
 
 const sureOption = cli.Options.boolean('sure').pipe(
 	cli.Options.withDefault(false),
