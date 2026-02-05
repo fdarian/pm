@@ -35,4 +35,12 @@ export const pnpmPackageManager = {
 		args.push('install');
 		return ShellCommand.make('pnpm', ...args);
 	},
+	buildAddCommand: (packages: Array<string>, dev: boolean) => {
+		const args: Array<string> = ['add'];
+		if (dev) args.push('-D');
+		args.push(...packages);
+		return ShellCommand.make('pnpm', ...args);
+	},
+	buildRemoveCommand: (packages: Array<string>) =>
+		ShellCommand.make('pnpm', 'remove', ...packages),
 };

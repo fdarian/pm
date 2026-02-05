@@ -36,4 +36,12 @@ export const bunPackageManager = {
 		}
 		return ShellCommand.make('bun', ...args);
 	},
+	buildAddCommand: (packages: Array<string>, dev: boolean) => {
+		const args: Array<string> = ['add'];
+		if (dev) args.push('-D');
+		args.push(...packages);
+		return ShellCommand.make('bun', ...args);
+	},
+	buildRemoveCommand: (packages: Array<string>) =>
+		ShellCommand.make('bun', 'remove', ...packages),
 };
