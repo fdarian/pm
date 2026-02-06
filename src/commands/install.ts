@@ -158,7 +158,7 @@ export const installCmd = cli.Command.make(
 					yield* Console.log('');
 				}
 				yield* Console.log('To install a specific package:');
-				yield* Console.log('  pm i -F <package-name>... (note: the trailing "..." meant to include all sub-dependencies)');
+				yield* Console.log('  pm i -F <package-name>  (append "..." to include sub-dependencies)');
 				yield* Console.log('');
 				yield* Console.log('To install everything:');
 				yield* Console.log(`  pm i --sure`);
