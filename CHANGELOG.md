@@ -1,5 +1,11 @@
 # better-pm
 
+## 0.2.1
+
+### Patch Changes
+
+- 5d72a6c: Append `...` suffix to auto-detected package filter during install to include sub-dependencies
+
 ## 0.2.0
 
 ### Minor Changes
