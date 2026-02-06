@@ -18,9 +18,9 @@ export class PackageNotFoundError extends Data.TaggedError(
 )<{
 	message: string;
 }> {
-	constructor(packageName: string, availablePackages: Array<string>) {
+	constructor(packageName: string, treeLines: Array<string>) {
 		super({
-			message: `Package "${packageName}" not found. Available packages:\n${availablePackages.map((p) => `  - ${p}`).join('\n')}`,
+			message: `Package "${packageName}" not found. Available packages:\n${treeLines.map((l) => `  ${l}`).join('\n')}`,
 		});
 	}
 }
