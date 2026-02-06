@@ -14,6 +14,7 @@ brew install fdarian/tap/better-pm
 
 <details>
 <summary>Or with npm</summary>
+
 > Homebrew is recommended — it installs a native binary, so shell completions resolve in ~60ms.
 
 ```bash
