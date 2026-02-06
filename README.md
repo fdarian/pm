@@ -6,6 +6,8 @@ A CLI for smarter package manager operations (especially in monorepos).
 - **Scoped installs by default** — automatically installs only the current package, no more accidental full-monorepo installs
 - **Easy navigation** — jump to any workspace package from anywhere
 
+https://github.com/user-attachments/assets/3d5496a9-91be-47dc-9e01-db8c5052c7c5
+
 ## Install
 
 ```bash
