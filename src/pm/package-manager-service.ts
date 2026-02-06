@@ -28,48 +28,52 @@ const WorkspacePackageJson = Schema.Struct({
 	name: Schema.String,
 });
 
+const readPackageName = (pkgJsonPath: string) =>
+	Effect.gen(function* () {
+		const fs = yield* FileSystem.FileSystem;
+		const content = yield* fs.readFileString(pkgJsonPath);
+		return yield* Schema.decode(Schema.parseJson(WorkspacePackageJson))(content);
+	}).pipe(Effect.option);
+
 export const enumerateWorkspacePackages = (lockDir: string, globs: ReadonlyArray<string>) =>
 	Effect.gen(function* () {
 		const fs = yield* FileSystem.FileSystem;
 		const path = yield* Path.Path;
-		const packages: Array<{ name: string; relDir: string }> = [];
 
-		for (const glob of globs) {
+		const tasks = globs.flatMap((glob) => {
 			const isGlobPattern = /\/\*+$/.test(glob);
 			const baseDir = glob.replace(/\/\*+$/, '');
 			const fullBase = path.join(lockDir, baseDir);
-			const exists = yield* fs.exists(fullBase);
-			if (!exists) continue;
 
 			if (isGlobPattern) {
-				const entries = yield* fs.readDirectory(fullBase);
-				for (const entry of entries) {
-					const pkgJsonPath = path.join(fullBase, entry, 'package.json');
-					const pkgExists = yield* fs.exists(pkgJsonPath);
-					if (!pkgExists) continue;
-
-					const content = yield* fs.readFileString(pkgJsonPath);
-					const decoded = yield* Schema.decode(
-						Schema.parseJson(WorkspacePackageJson),
-					)(content).pipe(Effect.option);
-					if (decoded._tag === 'Some') {
-						packages.push({ name: decoded.value.name, relDir: path.join(baseDir, entry) });
-					}
-				}
-			} else {
-				const pkgJsonPath = path.join(fullBase, 'package.json');
-				const pkgExists = yield* fs.exists(pkgJsonPath);
-				if (!pkgExists) continue;
-
-				const content = yield* fs.readFileString(pkgJsonPath);
-				const decoded = yield* Schema.decode(
-					Schema.parseJson(WorkspacePackageJson),
-				)(content).pipe(Effect.option);
-				if (decoded._tag === 'Some') {
-					packages.push({ name: decoded.value.name, relDir: baseDir });
-				}
+				return [
+					Effect.gen(function* () {
+						const entries = yield* Effect.option(fs.readDirectory(fullBase));
+						if (entries._tag === 'None') return [];
+						const entryTasks = entries.value.map((entry) =>
+							Effect.gen(function* () {
+								const pkgJsonPath = path.join(fullBase, entry, 'package.json');
+								const decoded = yield* readPackageName(pkgJsonPath);
+								if (decoded._tag === 'None') return [];
+								return [{ name: decoded.value.name, relDir: path.join(baseDir, entry) }];
+							}),
+						);
+						const results = yield* Effect.all(entryTasks, { concurrency: 'unbounded' });
+						return results.flat();
+					}),
+				];
 			}
-		}
 
-		return packages;
+			return [
+				Effect.gen(function* () {
+					const pkgJsonPath = path.join(fullBase, 'package.json');
+					const decoded = yield* readPackageName(pkgJsonPath);
+					if (decoded._tag === 'None') return [];
+					return [{ name: decoded.value.name, relDir: baseDir }];
+				}),
+			];
+		});
+
+		const results = yield* Effect.all(tasks, { concurrency: 'unbounded' });
+		return results.flat();
 	});
