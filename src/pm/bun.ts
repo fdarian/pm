@@ -2,8 +2,17 @@ import { FileSystem, Path, Command as ShellCommand } from '@effect/platform';
 import { Effect, Schema } from 'effect';
 import { enumerateWorkspacePackages } from '#src/pm/package-manager-service.ts';
 
+const WorkspacesField = Schema.Union(
+	Schema.Array(Schema.String),
+	Schema.transform(
+		Schema.Struct({ packages: Schema.Array(Schema.String) }),
+		Schema.Array(Schema.String),
+		{ decode: (obj) => obj.packages, encode: (arr) => ({ packages: arr }) },
+	),
+);
+
 const PackageJsonWithWorkspaces = Schema.Struct({
-	workspaces: Schema.optional(Schema.Array(Schema.String)),
+	workspaces: Schema.optional(WorkspacesField),
 });
 
 export const bunPackageManager = {
