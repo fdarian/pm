@@ -10,13 +10,13 @@ const packageNameArg = cli.Args.text({ name: 'package-name' }).pipe(
 	cli.Args.optional,
 );
 
-const listOption = cli.Options.boolean('list').pipe(
+const completionsOption = cli.Options.boolean('completions').pipe(
 	cli.Options.withDefault(false),
 );
 
 export const cdCmd = cli.Command.make(
 	'cd',
-	{ packageName: packageNameArg, list: listOption },
+	{ packageName: packageNameArg, completions: completionsOption },
 	(args) =>
 		Effect.gen(function* () {
 			const pm = yield* PackageManagerService;
@@ -24,7 +24,7 @@ export const cdCmd = cli.Command.make(
 			const pmResult = yield* detectPackageManager;
 			const packages = yield* pm.listWorkspacePackages(pmResult.lockDir);
 
-			if (args.list) {
+			if (args.completions) {
 				for (const pkg of packages) {
 					yield* Console.log(pkg.name);
 				}

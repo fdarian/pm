@@ -24,7 +24,7 @@ if (( $+functions[_pm_zsh_completions] )); then
   functions[_pm_zsh_completions_base]=$functions[_pm_zsh_completions];
   _pm_zsh_completions() {
     if [[ $words[2] == cd ]] && (( CURRENT == 3 )); then
-      compadd -- \${(f)"$(command pm cd --list 2>/dev/null)"};
+      compadd -- \${(f)"$(command pm cd --completions 2>/dev/null)"};
     else
       _pm_zsh_completions_base "$@";
     fi;
@@ -34,7 +34,7 @@ fi;`;
 const bashCompletions = `eval "$(command pm --completions bash)";
 _pm_custom_completions() {
   if [[ "\${COMP_WORDS[1]}" == "cd" ]] && [[ $COMP_CWORD -eq 2 ]]; then
-    COMPREPLY=($(compgen -W "$(command pm cd --list 2>/dev/null)" -- "\${COMP_WORDS[$COMP_CWORD]}"));
+    COMPREPLY=($(compgen -W "$(command pm cd --completions 2>/dev/null)" -- "\${COMP_WORDS[$COMP_CWORD]}"));
     return;
   fi;
   _pm_bash_completions;
