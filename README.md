@@ -87,8 +87,3 @@ pm cd @myapp/web    # cd into a workspace package
 pm cd               # cd to monorepo root
 ```
 
-## How it works
-
-1. **Detects your package manager** by walking up from the current directory looking for `pnpm-lock.yaml` or `bun.lock`/`bun.lockb`
-2. **Detects monorepo context** — whether you're at the root or inside a workspace package
-3. **Builds the right command** — `pnpm -F pkg... install` or `bun install --filter pkg`
