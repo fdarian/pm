@@ -53,4 +53,5 @@ export const bunPackageManager = {
 	},
 	buildRemoveCommand: (packages: Array<string>) =>
 		ShellCommand.make('bun', 'remove', ...packages),
+	toFilterWithDependencies: (packageName: string) => packageName,
 };

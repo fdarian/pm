@@ -44,4 +44,5 @@ export const npmPackageManager = {
 	},
 	buildRemoveCommand: (packages: Array<string>) =>
 		ShellCommand.make('npm', 'uninstall', ...packages),
+	toFilterWithDependencies: (packageName: string) => packageName,
 };

@@ -22,6 +22,7 @@ export class PackageManagerService extends Context.Tag('PackageManagerService')<
 		readonly buildFilteredInstallCommand: (filters: Array<string>) => ShellCommand.Command;
 		readonly buildAddCommand: (packages: Array<string>, dev: boolean) => ShellCommand.Command;
 		readonly buildRemoveCommand: (packages: Array<string>) => ShellCommand.Command;
+		readonly toFilterWithDependencies: (packageName: string) => string;
 	}
 >() {}
 
